@@ -1,0 +1,32 @@
+/*
+Here is a MongoDB aggregation query to retrieve a list of users along with their posts (if any). The result includes the user’s _id, username, name, and an array of their posts (post _id, title, content). If a user has no posts, the posts array will be an empty array:
+The $lookup stage performs a left outer join on the users collection with the posts collection. The localField is _id from the users collection, and the foreignField is user_id from the posts collection. The as field specifies the name of the output array.
+The $project stage is used to reshape the output document. The cond operator checks if the posts array is empty. If it is empty, it returns an empty array. Otherwise, it returns the posts array.
+*/
+
+db.users.aggregate([
+  {
+    $lookup: {
+      from: "posts",
+      localField: "_id",
+      foreignField: "user_id",
+      as: "posts"
+    }
+  },
+  {
+    $project: {
+      _id: 1,
+      username: 1,
+      name: 1,
+      posts: {
+        $cond: {
+          if: { $eq: [ "$posts", [] ] },
+          then: [],
+          else: "$posts"
+        }
+      }
+    }
+  }
+])
+
+
